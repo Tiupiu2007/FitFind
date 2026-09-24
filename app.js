@@ -1,12 +1,80 @@
 const products = [
-    { name: 'Essential Oversize T-Shirt', store: 'Demo Store', cat: 'maglia', price: 19.99, color: 'nero', icon: '👕' },
-    { name: 'Heavyweight Basic T-Shirt', store: 'Demo Store', cat: 'maglia', price: 24.90, color: 'bianco', icon: '👕' },
-    { name: 'Oversize Hoodie', store: 'Demo Store', cat: 'felpa', price: 39.99, color: 'grigio', icon: '🧥' },
-    { name: 'Zip Hoodie Essential', store: 'Demo Store', cat: 'felpa', price: 44.90, color: 'nero', icon: '🧥' },
-    { name: 'Relaxed Cargo Pants', store: 'Demo Store', cat: 'pantaloni', price: 49.99, color: 'nero', icon: '👖' },
-    { name: 'Wide Leg Trousers', store: 'Demo Store', cat: 'pantaloni', price: 35, color: 'grigio', icon: '👖' },
-    { name: 'Daily Runner', store: 'Demo Store', cat: 'scarpe', price: 59.99, color: 'bianco', icon: '👟' },
-    { name: 'Minimal Sneakers', store: 'Demo Store', cat: 'scarpe', price: 69.90, color: 'nero', icon: '👟' }];
-const $ = s => document.querySelector(s); const search = $('#search'), max = $('#max'), sort = $('#sort'), grid = $('#grid'), empty = $('#empty'), title = $('#title');
-function render() { const q = search.value.trim().toLowerCase(); const m = Number(max.value); let a = products.filter(p => (!q || [p.name, p.store, p.cat, p.color].join(' ').toLowerCase().includes(q)) && (!m || p.price <= m)); if (sort.value === 'asc') a.sort((x, y) => x.price - y.price); if (sort.value === 'desc') a.sort((x, y) => y.price - x.price); title.textContent = q ? '"' + q + '"' : 'Tutto'; grid.innerHTML = a.map(p => '<article class="card"><div class="visual">' + p.icon + '</div><div class="info"><div class="store">' + p.store + '</div><div class="name">' + p.name + '</div><div class="bottom"><span class="price">€' + p.price.toFixed(2) + '</span><a class="view" href="#">Vedi</a></div></div></article>').join(''); empty.classList.toggle('hidden', a.length > 0); grid.classList.toggle('hidden', a.length === 0) }
-$('#go').onclick = render; search.oninput = render; max.oninput = render; sort.onchange = render; document.querySelectorAll('nav button').forEach(b => b.onclick = () => { search.value = b.dataset.q; render(); document.querySelector('.results').scrollIntoView({ behavior: 'smooth' }) }); render();
+  { name: "Essential Oversize T-Shirt", store: "Urban Basics", category: "T-shirt", price: 19.99, color: "Nero", icon: "👕", badge: "Best price" },
+  { name: "Heavyweight Basic T-Shirt", store: "Streetwear Lab", category: "T-shirt", price: 24.90, color: "Bianco", icon: "👕", badge: "" },
+  { name: "Oversize Hoodie", store: "Urban Basics", category: "Felpe", price: 39.99, color: "Grigio", icon: "🧥", badge: "−20%" },
+  { name: "Zip Hoodie Essential", store: "Streetwear Lab", category: "Felpe", price: 44.90, color: "Nero", icon: "🧥", badge: "" },
+  { name: "Relaxed Cargo Pants", store: "Urban Basics", category: "Pantaloni", price: 49.99, color: "Nero", icon: "👖", badge: "" },
+  { name: "Wide Leg Trousers", store: "Minimal Wear", category: "Pantaloni", price: 35.00, color: "Grigio", icon: "👖", badge: "Best price" },
+  { name: "Daily Runner", store: "Streetwear Lab", category: "Scarpe", price: 59.99, color: "Bianco", icon: "👟", badge: "" },
+  { name: "Minimal Sneakers", store: "Minimal Wear", category: "Scarpe", price: 69.90, color: "Nero", icon: "👟", badge: "" }
+];
+
+const searchInput = document.querySelector("#search");
+const searchButton = document.querySelector("#go");
+const maxPriceInput = document.querySelector("#max");
+const sortSelect = document.querySelector("#sort");
+const productGrid = document.querySelector("#grid");
+const emptyState = document.querySelector("#empty");
+const resultsTitle = document.querySelector("#title");
+
+function normalize(text) {
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function getProducts() {
+  const query = normalize(searchInput.value.trim());
+  const maxPrice = Number(maxPriceInput.value);
+
+  let result = products.filter(product => {
+    const searchable = normalize([product.name, product.store, product.category, product.color].join(" "));
+    return (!query || searchable.includes(query)) && (!maxPrice || product.price <= maxPrice);
+  });
+
+  if (sortSelect.value === "asc") result.sort((a, b) => a.price - b.price);
+  if (sortSelect.value === "desc") result.sort((a, b) => b.price - a.price);
+
+  return result;
+}
+
+function renderProducts() {
+  const result = getProducts();
+  const query = searchInput.value.trim();
+  resultsTitle.textContent = query ? `"${query}"` : "Tutto";
+
+  productGrid.innerHTML = result.map(product => `
+    <article class="card">
+      <div class="visual">
+        ${product.badge ? `<span class="badge">${product.badge}</span>` : ""}
+        <span class="product-icon">${product.icon}</span>
+      </div>
+      <div class="info">
+        <div class="store">${product.store}</div>
+        <h3 class="name">${product.name}</h3>
+        <div class="meta"><span>${product.category}</span><span>•</span><span>${product.color}</span></div>
+        <div class="bottom">
+          <span class="price">€${product.price.toFixed(2)}</span>
+          <a class="view" href="#" onclick="return false;">Vedi</a>
+        </div>
+      </div>
+    </article>
+  `).join("");
+
+  emptyState.classList.toggle("hidden", result.length !== 0);
+  productGrid.classList.toggle("hidden", result.length === 0);
+}
+
+searchButton.addEventListener("click", renderProducts);
+searchInput.addEventListener("keydown", event => { if (event.key === "Enter") renderProducts(); });
+searchInput.addEventListener("input", renderProducts);
+maxPriceInput.addEventListener("input", renderProducts);
+sortSelect.addEventListener("change", renderProducts);
+
+document.querySelectorAll("nav button").forEach(button => {
+  button.addEventListener("click", () => {
+    searchInput.value = button.dataset.q;
+    renderProducts();
+    document.querySelector(".results").scrollIntoView({ behavior: "smooth" });
+  });
+});
+
+renderProducts();
