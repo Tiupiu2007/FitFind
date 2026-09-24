@@ -40,6 +40,17 @@ function getProducts() {
   return result;
 }
 
+function getBadgeClass(badge) {
+  if (!badge) return "";
+  return badge.toLowerCase().includes("%") ? "discount" : "best";
+}
+
+function renderBadge(badge, location) {
+  if (!badge) return "";
+  const icon = getBadgeClass(badge) === "discount" ? "↘" : "★";
+  return `<span class="${location}-badge ${getBadgeClass(badge)}"><span class="badge-icon">${icon}</span>${badge}</span>`;
+}
+
 function renderProducts() {
   const result = getProducts();
   const query = searchInput.value.trim();
@@ -50,7 +61,7 @@ function renderProducts() {
     <article class="card">
       <div class="visual">
         <img src="${product.image}" alt="${product.name}" loading="lazy">
-        ${product.badge ? `<span class="badge">${product.badge}</span>` : ""}
+        ${renderBadge(product.badge, "image")}
       </div>
 
       <div class="info">
@@ -66,7 +77,7 @@ function renderProducts() {
         <div class="bottom">
           <div class="price-area">
             <span class="price">${product.price.toFixed(2).replace(".", ",")}€</span>
-            ${product.badge ? `<span class="price-badge">${product.badge}</span>` : ""}
+            ${renderBadge(product.badge, "price")}
           </div>
           <a class="view" href="#" onclick="return false;">Vedi</a>
         </div>
