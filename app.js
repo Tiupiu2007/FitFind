@@ -64,7 +64,10 @@ function renderProducts() {
         </div>
 
         <div class="bottom">
-          <span class="price">€${product.price.toFixed(2)}</span>
+          <div class="price-area">
+            <span class="price">${product.price.toFixed(2).replace(".", ",")}€</span>
+            ${product.badge ? `<span class="price-badge">${product.badge}</span>` : ""}
+          </div>
           <a class="view" href="#" onclick="return false;">Vedi</a>
         </div>
       </div>
